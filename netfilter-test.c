@@ -22,74 +22,77 @@ char URL[4096] = {'\0'};
 
 
 int ckMeth(unsigned char* pBuf) {
-    if(pBuf[0] == 'G' && pBuf[1] == 'E' && pBuf[2] == 'T')
-        return 1;
-    else
-        return 0;
+	if(pBuf[0] == 'G' && pBuf[1] == 'E' && pBuf[2] == 'T')
+        	return 1;
+    	else
+        	return 0;
     
 }
 
 int dump(unsigned char* pBuf, int size) {
-    int i;
-    unsigned char pkt_host[4096];
-    int option = 0;
-    option = ckMeth(pBuf);
+    	int i;
+    	unsigned char pkt_host[4096];
+    	int option = 0;
+    	option = ckMeth(pBuf);
 
-    switch (option) {
-        case 1: sscanf(pBuf, "GET / HTTP/1.1\r\nHost: %s", pkt_host);
-            break;
-        default:
-            break;
-    }
-    if(option) {
-        printf("Site : %s\n", pkt_host);
+    	switch (option) {
+    		case 1: sscanf(pBuf, "GET / HTTP/1.1\r\nHost: %s", pkt_host);
+    	    		break;
+    		default:
+    			break;
+    	}
 
-        if(!strncmp(pkt_host, URL, strlen(pkt_host))) {
-            return 1;
-        }
-        else
-            return 0;
-    }
+    	if(option) {
+        	printf("Site : %s\n", pkt_host);
+
+        	if(!strncmp(pkt_host, URL, strlen(pkt_host))) {
+        	    return 1;
+        	}else
+            	return 0;
+    	}
 }
 
 static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfa, void *data)
 {
 	int id = 0;
+	
 	struct nfqnl_msg_packet_hdr *ph;
 	struct nfqnl_msg_packet_hw *hwph;
 	u_int32_t mark,ifi;
+	
 	int ret;
 	unsigned char *pkt;
 	char *Method;
-    int op = 0;
+	int op = 0;
+	
 	ph = nfq_get_msg_packet_hdr(nfa);
 	
 	if (ph) {
 		id = ntohl(ph->packet_id);
 	}
+
 	ret = nfq_get_payload(nfa, &pkt);
+	
 	if (ret >= 0) {
-		
-        pkt += 0 + 20 + 20;
+        	pkt += 0 + 20 + 20;
 		op = dump(pkt, ret);	
 	}
-    if(op) {
-        printf("Blocked!\n");
-	    return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
-    }
-
-    else {
-        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
-    }
+	
+	if(op) {
+        	printf("Blocked!\n");
+		return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
+    	}else {
+        	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    	}
 }
 
 int main(int argc, char **argv)
 {
 
-    if(argc != 2) {
-        usage();
-        return 0;
-    }
+	if(argc != 2) {
+        	usage();
+        	return 0;
+    	}
     
 	struct nfq_handle *h;
 	struct nfq_q_handle *qh;
