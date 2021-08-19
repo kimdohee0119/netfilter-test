@@ -98,12 +98,8 @@ int main(int argc, char **argv)
 	int rv;
 	char pBuf[4096] __attribute__ ((aligned));
 
-    if(argc != 2) {
-        printf("Usage : sudo ./netfilter-test <url>\n");
-		exit(0);
-    }
 
-    strncpy(URL, argv[1], 4095);
+	strncpy(URL, argv[1], 4095);
 	printf("opening library handle\n");
 	h = nfq_open();
 	if (!h) {
